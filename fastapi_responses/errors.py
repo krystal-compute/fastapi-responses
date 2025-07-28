@@ -5,7 +5,6 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi_responses.response import Response
 
-logger = logging.getLogger(__name__)
 
 ERROR_MESSAGES: dict[int, str] = {
     401: "Authentication required",
@@ -59,7 +58,7 @@ def setup_error_handlers(app: FastAPI) -> None:
     ) -> JSONResponse:
         """Handle validation errors from pydantic models."""
 
-        logger.exception(exc)
+        logging.exception(exc)
 
         response = Response(success=False, error=ERROR_MESSAGES[422])
 
@@ -72,7 +71,7 @@ def setup_error_handlers(app: FastAPI) -> None:
     async def error_response_handler(_: Request, exc: ErrorResponse) -> JSONResponse:
         """Convert ErrorResponse exceptions to proper JSONResponse objects."""
 
-        logger.info("ErrorResponse: %s - %s", exc.status_code, exc.error)
+        logging.info("ErrorResponse: %s - %s", exc.status_code, exc.error)
 
         response = Response(success=False, error=exc.error)
 
@@ -85,7 +84,7 @@ def setup_error_handlers(app: FastAPI) -> None:
     async def general_exception_handler(_: Request, exc: Exception) -> JSONResponse:
         """Handle all unhandled exceptions."""
 
-        logger.exception(exc)
+        logging.exception(exc)
 
         response = Response(success=False, error=ERROR_MESSAGES[500])
 
