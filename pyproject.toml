@@ -1,0 +1,18 @@
+[project]
+name = "fastapi-responses"
+version = "0.0.1"
+description = "FastAPI Responses"
+authors = [
+    { name = "Julien Kmec", email = "admin@krystalcompute.com" },
+]
+readme = "README.md"
+packages = [{include = "fastapi_responses"}]
+requires-python = ">=3.11.0,<4.0.0"
+dependencies = [
+    "pydantic>=2.10.6",
+    "fastapi[standard]>=0.115.14",
+]
+
+[build-system]
+requires = ["poetry-core", "setuptools"]
+build-backend = "poetry.core.masonry.api"
