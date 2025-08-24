@@ -1,11 +1,12 @@
 [project]
 name = "fastapi-custom-responses"
-version = "0.0.0"
+version = "0.0.1"
 description = "FastAPI Custom Responses"
 authors = [
     { name = "Julien Kmec", email = "me@julien.dev" },
 ]
 readme = "README.md"
+license = {file = "LICENSE"}
 homepage = "https://github.com/julien777z/fastapi-custom-responses"
 packages = [{include = "fastapi_custom_responses"}]
 requires-python = ">=3.11.0,<3.14"
