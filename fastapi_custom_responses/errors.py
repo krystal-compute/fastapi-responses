@@ -1,9 +1,11 @@
-from http import HTTPStatus
 import logging
+from http import HTTPStatus
+
 from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from fastapi_responses.responses import Response
+
+from fastapi_custom_responses import Response
 
 logger = logging.getLogger(__name__)
 
@@ -54,9 +56,7 @@ def setup_error_handlers(app: FastAPI) -> None:
     """Set up global error handlers for the application."""
 
     @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(
-        _: Request, exc: RequestValidationError
-    ) -> JSONResponse:
+    async def validation_exception_handler(_: Request, exc: RequestValidationError) -> JSONResponse:
         """Handle validation errors from pydantic models."""
 
         logger.exception(exc)
