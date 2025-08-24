@@ -5,7 +5,7 @@ from fastapi import FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from fastapi_custom_responses import Response
+from fastapi_custom_responses.responses import Response
 
 logger = logging.getLogger(__name__)
 
