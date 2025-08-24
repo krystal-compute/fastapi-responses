@@ -1,12 +1,13 @@
 [project]
-name = "fastapi-responses"
-version = "0.0.2"
-description = "FastAPI Responses"
+name = "fastapi-custom-responses"
+version = "0.0.0"
+description = "FastAPI Custom Responses"
 authors = [
-    { name = "Julien Kmec", email = "admin@krystalcompute.com" },
+    { name = "Julien Kmec", email = "me@julien.dev" },
 ]
 readme = "README.md"
-packages = [{include = "fastapi_responses"}]
+homepage = "https://github.com/julien777z/fastapi-custom-responses"
+packages = [{include = "fastapi_custom_responses"}]
 requires-python = ">=3.11.0,<3.14"
 dependencies = [
     "pydantic>=2.10.6",
