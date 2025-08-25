@@ -1,7 +1,8 @@
 import logging
 from http import HTTPStatus
+from typing import Callable
 
-from fastapi import FastAPI, Request, status
+from fastapi import Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
@@ -10,12 +11,11 @@ from fastapi_custom_responses.responses import Response
 logger = logging.getLogger(__name__)
 
 ERROR_MESSAGES: dict[int, str] = {
-    401: "Authentication required",
-    403: "You don't have permission to perform this action",
-    404: "Resource not found",
-    400: "Invalid request",
-    422: "Invalid request data",
-    500: "An unexpected error occurred",
+    HTTPStatus.UNAUTHORIZED: "Authentication required",
+    HTTPStatus.FORBIDDEN: "You don't have permission to perform this action",
+    HTTPStatus.NOT_FOUND: "Resource not found",
+    HTTPStatus.BAD_REQUEST: "Invalid request",
+    HTTPStatus.INTERNAL_SERVER_ERROR: "An unexpected error occurred",
 }
 
 
@@ -47,49 +47,52 @@ class ErrorResponse(Exception):
         """
 
         return cls(
-            error=ERROR_MESSAGES.get(status_code, ERROR_MESSAGES[500]),
+            error=ERROR_MESSAGES.get(status_code, ERROR_MESSAGES[HTTPStatus.INTERNAL_SERVER_ERROR]),
             status_code=status_code,
         )
 
 
-def setup_error_handlers(app: FastAPI) -> None:
-    """Set up global error handlers for the application."""
+def _validation_exception_handler(_: Request, exc: RequestValidationError) -> JSONResponse:
+    """Handle validation errors from pydantic models."""
 
-    @app.exception_handler(RequestValidationError)
-    async def validation_exception_handler(_: Request, exc: RequestValidationError) -> JSONResponse:
-        """Handle validation errors from pydantic models."""
+    logger.exception(exc)
 
-        logger.exception(exc)
+    response = Response(success=False, error=ERROR_MESSAGES[HTTPStatus.BAD_REQUEST])
 
-        response = Response(success=False, error=ERROR_MESSAGES[422])
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content=response.model_dump(mode="json"),
+    )
 
-        return JSONResponse(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            content=response.model_dump(mode="json"),
-        )
 
-    @app.exception_handler(ErrorResponse)
-    async def error_response_handler(_: Request, exc: ErrorResponse) -> JSONResponse:
-        """Convert ErrorResponse exceptions to proper JSONResponse objects."""
+def _error_response_handler(_: Request, exc: ErrorResponse) -> JSONResponse:
+    """Convert ErrorResponse exceptions to proper JSONResponse objects."""
 
-        logger.info("ErrorResponse: %s - %s", exc.status_code, exc.error)
+    logger.info("ErrorResponse: %s - %s", exc.status_code, exc.error)
 
-        response = Response(success=False, error=exc.error)
+    response = Response(success=False, error=exc.error)
 
-        return JSONResponse(
-            status_code=exc.status_code,
-            content=response.model_dump(mode="json"),
-        )
+    return JSONResponse(
+        status_code=exc.status_code,
+        content=response.model_dump(mode="json"),
+    )
 
-    @app.exception_handler(Exception)
-    async def general_exception_handler(_: Request, exc: Exception) -> JSONResponse:
-        """Handle all unhandled exceptions."""
 
-        logger.exception(exc)
+def _general_exception_handler(_: Request, exc: Exception) -> JSONResponse:
+    """Handle all unhandled exceptions."""
 
-        response = Response(success=False, error=ERROR_MESSAGES[500])
+    logger.exception(exc)
 
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content=response.model_dump(mode="json"),
-        )
+    response = Response(success=False, error=ERROR_MESSAGES[HTTPStatus.INTERNAL_SERVER_ERROR])
+
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content=response.model_dump(mode="json"),
+    )
+
+
+ERROR_HANDLERS: dict[type[Exception], Callable[[Request, Exception], JSONResponse]] = {
+    RequestValidationError: _validation_exception_handler,
+    ErrorResponse: _error_response_handler,
+    Exception: _general_exception_handler,
+}
