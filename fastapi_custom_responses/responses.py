@@ -1,4 +1,5 @@
 from typing import Any
+
 from pydantic_super_model import SuperModel
 
 
@@ -15,7 +16,7 @@ class PaginationMeta(SuperModel):
 
     offset: int
     limit: int
-    count: int
+    total: int
 
 
 class PaginatedResponse[T: Any](Response[list[T]]):
